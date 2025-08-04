@@ -1,0 +1,169 @@
+{% extends 'index.html' %}
+
+{% block contenido%}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Caja Registradora</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            max-width: 500px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        label, input, select {
+            display: block;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        input[type="text"], input[type="number"], select {
+            padding: 8px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .info-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .alerta-stock {
+            color: red;
+            font-weight: bold;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 10px;
+            width: 100%;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<h2 style="text-align: center;">Caja Registradora</h2>
+
+<form method="POST" action="{{ url_for('registrar_venta') }}">
+    
+
+    <label for="producto_id">Selecciona producto:</label>
+    <select id="producto_id" name="producto_id" onchange="mostrarPrecio()">
+        {% for p in productos %}
+            <option 
+    value="{{ p['id'] }}"
+    data-precio="{{ p['precio'] }}"
+    data-stock="{{ p['cantidad'] }}">
+    {{ p['nombre'] }}
+</option>
+        {% endfor %}
+    </select>
+
+    <label class="info-label" id="precio_label">Precio: $0.00</label>
+    <div class="alerta-stock" id="alerta_stock"></div>
+
+    <label for="cantidad">Cantidad:</label>
+    <input type="number" name="cantidad" id="cantidad" min="1" required onchange="calcularTotal()">
+
+    <label class="info-label" id="total_label">Total: $0.00</label>
+
+    <label for="entregado">Dinero entregado:</label>
+    <input type="number" name="entregado" id="entregado" min="0" required onchange="calcularVuelto()">
+
+    <label class="info-label" id="vuelto_label">Vuelto: $0.00</label>
+
+    <button type="submit">Registrar venta</button>
+   
+
+</a>
+
+</form>
+ <form method="GET" action="{{ url_for('reporte_ventas') }}" style="margin-top: 20px;">
+    <label for="fecha">Selecciona fecha para el reporte:</label>
+    <input type="date" name="fecha" id="fecha" required>
+
+    <button type="submit" style="background-color: #2196F3; margin-top: 10px;">Ver reporte por fecha</button>
+    </form>
+<script>
+    function mostrarPrecio() {
+        const select = document.getElementById('producto_id');
+        const precio = select.options[select.selectedIndex].getAttribute('data-precio');
+        const stock = parseInt(select.options[select.selectedIndex].getAttribute('data-stock'));
+
+        document.getElementById('precio_label').textContent = `Precio: $${parseFloat(precio).toFixed(2)}`;
+
+        const alerta = document.getElementById('alerta_stock');
+        alerta.textContent = stock < 5 ? `Solo quedan ${stock} unidades en inventario` : '';
+
+        calcularTotal();
+    }
+
+    function calcularTotal() {
+        const precio = parseFloat(document.getElementById('producto_id').selectedOptions[0].getAttribute('data-precio'));
+        const cantidad = parseInt(document.getElementById('cantidad').value || 0);
+        const total = precio * cantidad;
+        document.getElementById('total_label').textContent = `Total: $${total.toFixed(2)}`;
+    }
+
+    function calcularVuelto() {
+        const entregado = parseFloat(document.getElementById('entregado').value || 0);
+        const precio = parseFloat(document.getElementById('producto_id').selectedOptions[0].getAttribute('data-precio'));
+        const cantidad = parseInt(document.getElementById('cantidad').value || 0);
+        const total = precio * cantidad;
+        const vuelto = entregado - total;
+        document.getElementById('vuelto_label').textContent = `Vuelto: $${vuelto.toFixed(2)}`;
+    }
+
+    function filtrarProductos() {
+        const filtro = document.getElementById('buscar').value.toLowerCase();
+        const select = document.getElementById('producto_id');
+        for (let i = 0; i < select.options.length; i++) {
+            const nombre = select.options[i].text.toLowerCase();
+            select.options[i].style.display = nombre.includes(filtro) ? '' : 'none';
+        }
+    }
+
+    window.onload = mostrarPrecio;
+</script>
+
+<script>
+function seleccionarProductoPorNombre() {
+    const nombreBuscado = document.getElementById("busqueda").value.toLowerCase();
+    const select = document.getElementById("producto_id");
+    for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].text.toLowerCase() === nombreBuscado) {
+            select.selectedIndex = i;
+            mostrarPrecio();
+            break;
+        }
+    }
+}
+</script>
+
+
+   
+    
+ 
+
+
+{% endblock%}

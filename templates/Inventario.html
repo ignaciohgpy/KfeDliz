@@ -1,0 +1,76 @@
+{% extends 'index.html' %}
+
+{% block contenido%}
+<head>
+    <title>Inventario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1em;
+            overflow-x: auto;
+        }
+
+        th, td {
+            border: 1px solid #888;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        @media (max-width: 600px) {
+            th, td {
+                font-size: 14px;
+            }
+
+            .acciones {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<table id="tablaProductos">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Unidad</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for producto in productos %}
+        <tr>
+            <td>{{ producto['nombre'] }}</td>
+            <td>{{ producto['cantidad'] }}</td>
+            <td>${{ producto['precio'] }}</td>
+            <td>
+                <form action="/vender/{{ producto['id'] }}" method="post" style="display:inline;">
+                    <input type="number" name="cantidad_vendida" min="1" max="{{ producto['cantidad'] }}" placeholder="Cantidad" required>
+                    <button type="submit">Vender</button>
+                </form>
+                <a href="/editar/{{ producto['id'] }}">Editar</a>
+                <a href="/eliminar/{{ producto['id'] }}" onclick="return confirm('¿Eliminar este producto?')">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
