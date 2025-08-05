@@ -1,9 +1,5 @@
-from flask import Flask
-from flask import render_template
+from flask import Flask, render_template
 import os
-
-
-
 
 def create_app(test_config=None):
     # create and configure the app
@@ -33,9 +29,8 @@ def create_app(test_config=None):
 
     return app
 
-app = Flask(__name__)
-
-
+# Esta línea expone la app para Vercel
+app = create_app()
 
 
 
