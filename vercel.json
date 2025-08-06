@@ -1,11 +1,8 @@
 {
-  "builds": [
+  "rewrites": [
     {
-      "src": "flaskr/KfeDliz.py",
-      "use": "@vercel/python"
+      "source": "/(.*)",
+      "destination": "/api/index.py"
     }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "flaskr/KfeDliz.py" }
   ]
 }
