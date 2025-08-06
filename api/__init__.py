@@ -1,26 +1,30 @@
 from flask import Flask, render_template, request, redirect,url_for
+from . import db
+from api.db import get_db
 import os
 import datetime
+from . import db
 
-from flaskr.db import get_db
-from flaskr import db  # Asegúrate que 'flaskr' es el nombre de tu paquete
 
-def create_app(test_config=None):
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-    )
 
-    if test_config is None:
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        app.config.from_mapping(test_config)
 
+def create_app(instance_relative_config=True):
+    template_path = os.path.join(os.path.dirname(__file__), '..', 'templates')
+    static_path = os.path.join(os.path.dirname(__file__), '..', 'static')
+    app = Flask(__name__, instance_relative_config=instance_relative_config,template_folder=template_path, static_folder=static_path)
+    
+        
+    # Ruta a la base de datos dentro de la carpeta 'instance'
+    app.config['DATABASE'] = os.path.join(app.instance_path, 'flaskr.sqlite')
+
+    # Asegúrate de que exista la carpeta 'instance'
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    
+    db.init_app(app)
 
     @app.route('/index')
     def hello():
