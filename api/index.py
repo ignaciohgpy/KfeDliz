@@ -2,5 +2,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from index import app
+from api import create_app
+
+app = create_app()
+
 
