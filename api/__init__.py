@@ -25,6 +25,10 @@ def create_app(instance_relative_config=True):
 
     
     db.init_app(app)
+    
+    @app.route("/")
+    def home():
+        return render_template("index.html")
 
     @app.route('/index')
     def hello():
