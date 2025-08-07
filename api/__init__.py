@@ -27,9 +27,6 @@ def create_app(instance_relative_config=True):
     db.init_app(app)
     
     @app.route('/')
-    def home():
-        return "¡Hola desde Flask en Render!"
-
     @app.route('/index')
     def hello():
         db = get_db()
