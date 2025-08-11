@@ -6,7 +6,9 @@
         <tr style="background-color: #ddd;">
             <th style="padding: 10px; border: 1px solid #ccc;">Producto</th>
             <th style="padding: 10px; border: 1px solid #ccc;">Cantidad Vendida</th>
+            <th style="padding: 10px; border: 1px solid #ccc;">Total Invertido ($)</th>
             <th style="padding: 10px; border: 1px solid #ccc;">Total Vendido ($)</th>
+            <th style="padding: 10px; border: 1px solid #ccc;">Ganancias ($)</th>
         </tr>
     </thead>
     <tbody>
@@ -15,6 +17,8 @@
             <td style="padding: 10px; border: 1px solid #ccc;">{{ fila[0] }}</td>
             <td style="padding: 10px; border: 1px solid #ccc;">{{ fila[1] }}</td>
             <td style="padding: 10px; border: 1px solid #ccc;">{{ "%.2f"|format(fila[2]) }}</td>
+            <td style="padding: 10px; border: 1px solid #ccc;">{{ "%.2f"|format(fila[3]) }}</td>
+            <td style="padding: 10px; border: 1px solid #ccc;">{{ "%.2f"|format(fila[4]) }}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -29,7 +33,12 @@
 
 
 <h3 style="text-align: center; margin-top: 20px;">
-    Total vendido: ${{ "%.2f"|format(suma_total) }}
+    Total Invertido: ${{ "%.2f"|format(suma_Inver) }}
 </h3>
-
+<h3 style="text-align: center; margin-top: 20px;">
+    Total Vendido: ${{ "%.2f"|format(suma_Vend) }}
+</h3>
+<h3 style="text-align: center; margin-top: 20px;">
+    Total Ganancia: ${{ "%.2f"|format(suma_Ganan) }}
+</h3>
 

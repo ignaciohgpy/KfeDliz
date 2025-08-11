@@ -44,7 +44,131 @@
             }
         }
     </style>
+    <style>
+.btn-agregar {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+.btn-agregar:hover {
+    background-color: #218838;
+}
+</style>
+<style>
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1050;
+  width: 90%;
+  max-width: 500px;
+}
+
+.modal-content {
+  background: #fff8f0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #4b3f2f;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  background-color: #d9a679;
+  color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  padding: 16px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.modal-body label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.modal-body input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #fffdf8;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.modal-footer button {
+  background-color: #a0522d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-footer button:hover {
+  background-color: #8b4513;
+}
+</style>
+
+
 </head>
+<div style="margin-bottom: 20px;">
+	 <button onclick="abrirModal()" class="btn-agregar">Agregar nuevo producto</button>
+</div>
+<div id="modalFondo" class="modal-backdrop" style="display:none;"></div>
+<div id="modalProducto" class="modal" style="display:none;">
+  <div class="modal-content">
+    <div class="modal-header">Nuevo Producto</div>
+    <form id="formProducto" class="modal-body">
+      <label>Nombre:</label>
+      <input type="text" name="nombre">
+      <label>Cantidad:</label>
+      <input type="number" name="cantidad">
+      <label>Precio:</label>
+      <input type="number" name="precio">
+      <label>Precio de Venta:</label>
+      <input type="number" name="PrecioV">
+      <label>Unidad:</label>
+      <input type="text" name="Unidad">
+      <label>Descripción:</label>
+      <input type="text" name="Descripcion">
+      <label>Tipo:</label><br>
+      <input type="text" name="Tipo"><br>
+      <div class="modal-footer">
+        <button type="submit">Guardar</button>
+        <button type="button" onclick="cerrarModal()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+	 
 
 <table id="tablaProductos">
     <thead>
@@ -52,7 +176,8 @@
             <th>Nombre</th>
             <th>Cantidad</th>
             <th>Precio</th>
-            <th>Unidad</th>
+            <th>Precio de Venta</th>
+            <th>Operaciones</th>
         </tr>
     </thead>
     <tbody>
@@ -61,16 +186,48 @@
             <td>{{ producto['nombre'] }}</td>
             <td>{{ producto['cantidad'] }}</td>
             <td>${{ producto['precio'] }}</td>
+            <td>${{ producto['precioV'] }}</td>
             <td>
                 <form action="/vender/{{ producto['id'] }}" method="post" style="display:inline;">
-                    <input type="number" name="cantidad_vendida" min="1" max="{{ producto['cantidad'] }}" placeholder="Cantidad" required>
-                    <button type="submit">Vender</button>
+                    <input type="number" name="cantidad_vendida" min="1"  placeholder="Cantidad" required>
+                    <button type="submit">Vendido</button>
+                    <button type="submit" formaction="/Incremento/{{ producto['id'] }}" name="accion" value="agregar" onclick="desactivarValidacion()">Agregar</button>
                 </form>
-                <a href="/editar/{{ producto['id'] }}">Editar</a>
-                <a href="/eliminar/{{ producto['id'] }}" onclick="return confirm('¿Eliminar este producto?')">Eliminar</a>
+                <!--<a href="/editar/{{ producto['id'] }}">Editar</a>-->
+                <!--<a href="/eliminar/{{ producto['id'] }}" onclick="return confirm('¿Eliminar este producto?')">Eliminar</a>-->
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+<script>
+function abrirModal() {
+    document.getElementById('modalProducto').style.display = 'block';
+}
+
+function cerrarModal() {
+    document.getElementById('modalProducto').style.display = 'none';
+}
+
+document.getElementById('formProducto').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const datos = new FormData(this);
+
+    fetch('/Agregar_Nuevo_Producto', {
+        method: 'POST',
+        body: datos
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.exito) {
+            cerrarModal();
+            // Opcional: actualizar la tabla sin recargar
+            location.reload(); // o mejor aún, actualizar dinámicamente
+        } else {
+            alert('Error al agregar producto');
+        }
+    });
+});
+</script>
 {% endblock %}
+

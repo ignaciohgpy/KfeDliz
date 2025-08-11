@@ -99,9 +99,10 @@
 
 </form>
  <form method="GET" action="{{ url_for('reporte_ventas') }}" style="margin-top: 20px;">
-    <label for="fecha">Selecciona fecha para el reporte:</label>
-    <input type="date" name="fecha" id="fecha" required>
-
+    <label for="fechaI">Selecciona fecha Inicio para el reporte:</label>
+    <input type="date" name="fechaI" id="fechaI" required>
+    <label for="fechaF">Selecciona fecha Final para el reporte:</label>
+    <input type="date" name="fechaF" id="fechaF" required>
     <button type="submit" style="background-color: #2196F3; margin-top: 10px;">Ver reporte por fecha</button>
     </form>
 <script>

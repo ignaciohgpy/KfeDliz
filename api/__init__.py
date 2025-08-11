@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect,url_for
+from flask import Flask, render_template, request, redirect,url_for,jsonify
 from . import db
 from api.db import get_db
 import os
@@ -7,7 +7,7 @@ from . import db
 
 
 
-
+ahora = datetime.datetime.now()
 def create_app(instance_relative_config=True):
     template_path = os.path.join(os.path.dirname(__file__), '..', 'templates')
     static_path = os.path.join(os.path.dirname(__file__), '..', 'static')
@@ -26,6 +26,28 @@ def create_app(instance_relative_config=True):
     
     db.init_app(app)
     
+    @app.route('/Agregar_Nuevo_Producto', methods=['POST'])
+    def agregar_producto():
+         db = get_db()
+         nombre = request.form['nombre']
+         unidad = request.form['Unidad']
+         precio = float(request.form['precio'])
+         Tipo = request.form['Tipo']
+         descrip = request.form['Descripcion']
+         cantidad = int(request.form['cantidad'])
+         precioV = float(request.form['PrecioV'])
+         
+         
+         
+         
+         db.execute("""INSERT INTO productos (Nombre, Unidad, Precio, Tipo, Descripcion,Cantidad,PrecioV)VALUES (?, ?, ?, ?, ?, ?, ?)""", (nombre,unidad,precio,Tipo,descrip,cantidad,precioV))
+         db.commit()
+
+    # Aquí deberías guardar en tu base de datos o estructura
+    # Por ejemplo:
+    # productos.append({'nombre': nombre, 'cantidad': cantidad, 'precio': precio})
+
+         return jsonify({'exito': True})
     @app.route('/')
     @app.route('/index')
     def hello():
@@ -44,13 +66,32 @@ def create_app(instance_relative_config=True):
     def vender_producto(id):
          cantidad_vendida = int(request.form['cantidad_vendida'])
          db = get_db()
-
-         producto = db.execute('SELECT cantidad FROM productos WHERE id = ?', (id,)).fetchone()
+         
+         
+         producto = db.execute('SELECT Cantidad, Precio,id,Nombre FROM productos WHERE id = ?', (id,)).fetchone()
          if producto and producto['cantidad'] >= cantidad_vendida:
               nueva_cantidad = producto['cantidad'] - cantidad_vendida
               db.execute('UPDATE productos SET cantidad = ? WHERE id = ?', (nueva_cantidad, id))
+              total=cantidad_vendida*producto['Precio']
+              
+              db.execute("""INSERT INTO ventas (producto_id, Nombre, Precio, Cantidad, Total, fecha)VALUES (?, ?, ?, ?, ?, ?)""", (id, producto['Nombre'], producto['Precio'], cantidad_vendida, total, ahora.date()))
               db.commit()
          return redirect('/Inventario')
+    
+    @app.route('/Incremento/<int:id>', methods=['POST'])
+    def Incremento_producto(id):
+         cantidad_vendida = int(request.form['cantidad_vendida'])
+         db = get_db()
+
+         producto = db.execute('SELECT Cantidad, Precio,id,Nombre FROM productos WHERE id = ?', (id,)).fetchone()
+         
+         nueva_cantidad = producto['cantidad'] + cantidad_vendida
+         db.execute('UPDATE productos SET cantidad = ? WHERE id = ?', (nueva_cantidad, id))
+         total=cantidad_vendida*producto['Precio']*(-1)
+         db.execute("""INSERT INTO ventas (producto_id, Nombre, Precio, Cantidad, Total, fecha)VALUES (?, ?, ?, ?, ?, ?)""", (id, producto['Nombre'], producto['Precio'], cantidad_vendida, total, ahora.date()))
+         db.commit()
+         return redirect('/Inventario')     
+    
     @app.route('/editar/<int:id>', methods=['GET', 'POST'])
     def editar_producto(id):
        db = get_db()
@@ -121,22 +162,37 @@ def create_app(instance_relative_config=True):
     @app.route('/reporte_ventas')
     def reporte_ventas():
         db = get_db()
-        fecha = request.args.get('fecha')
-        
+        fechaI = request.args.get('fechaI')
+        fechaF = request.args.get('fechaF')
 	
         reporteBD=db.execute("""
-    SELECT nombre, SUM(cantidad) AS total_cantidad, SUM(total) AS total_ventas
-    FROM ventas
-    WHERE DATE(fecha) = ?
-    GROUP BY nombre
-""", (fecha,)).fetchall()
+    SELECT ventas.nombre,  SUM(ventas.cantidad) AS cantidad_Vendida, SUM(ventas.total) AS total_Invertido,SUM(ventas.cantidad)*productos.PrecioV as total_Vendido, SUM(ventas.cantidad)*productos.PrecioV-SUM(ventas.total) as Ganancias
+    FROM ventas inner join productos on productos.nombre= ventas.nombre
+    WHERE DATE(fecha) BETWEEN	?  and ? and Total>0
+    GROUP BY ventas.nombre
+""", (fechaI,fechaF)).fetchall()
         
         
-        sumatotal=db.execute("""SELECT SUM(total) FROM ventas WHERE DATE(fecha) = ? """, (fecha,)).fetchall()
+        sumatotal=db.execute("""SELECT 
+    SUM(cantidad_Vendida) AS cantidad_total,
+    SUM(total_Invertido) AS invertido_total,
+    SUM(total_Vendido) AS vendido_total,
+    SUM(Ganancias) AS ganancias_total
+FROM (
+    SELECT ventas.nombre,  
+           SUM(ventas.cantidad) AS cantidad_Vendida, 
+           SUM(ventas.total) AS total_Invertido,
+           SUM(ventas.cantidad) * productos.PrecioV AS total_Vendido, 
+           SUM(ventas.cantidad) * productos.PrecioV - SUM(ventas.total) AS Ganancias
+    FROM ventas 
+    INNER JOIN productos ON productos.nombre = ventas.nombre
+    WHERE DATE(fecha) BETWEEN	?  and ?  AND ventas.total > 0
+    GROUP BY ventas.nombre	
+)	""", (fechaI,fechaF)).fetchall()
 
         db.close()
 	
-        return render_template('reporte.html', reporte=reporteBD,fecha=fecha,suma_total=sumatotal[0][0])    
+        return render_template('reporte.html', reporte=reporteBD,suma_Inver=sumatotal[0][1],suma_Vend=sumatotal[0][2],suma_Ganan=sumatotal[0][3])    
 
 
     @app.route('/caja')
