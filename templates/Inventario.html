@@ -143,6 +143,7 @@
 	 <button onclick="abrirModal()" class="btn-agregar">Agregar nuevo producto</button>
 </div>
 <div id="modalFondo" class="modal-backdrop" style="display:none;"></div>
+
 <div id="modalProducto" class="modal" style="display:none;">
   <div class="modal-content">
     <div class="modal-header">Nuevo Producto</div>
@@ -168,8 +169,43 @@
     </form>
   </div>
 </div>
-	 
+<style>
+	@media screen and (max-width: 768px) {
+  #tablaProductos, 
+  #tablaProductos thead, 
+  #tablaProductos tbody, 
+  #tablaProductos th, 
+  #tablaProductos td, 
+  #tablaProductos tr {
+    display: block;
+    width: 100%;
+  }
 
+  #tablaProductos tr {
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #fffaf0;
+  }
+
+  #tablaProductos td {
+    text-align: left;
+    padding: 6px;
+    border: none;
+    position: relative;
+  }
+
+  #tablaProductos td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    display: block;
+    margin-bottom: 4px;
+    color: #5c3d2e;
+  }
+}
+
+</style>	 
+<div style="overflow-x:auto;">
 <table id="tablaProductos">
     <thead>
         <tr>
@@ -183,10 +219,10 @@
     <tbody>
         {% for producto in productos %}
         <tr>
-            <td>{{ producto['nombre'] }}</td>
-            <td>{{ producto['cantidad'] }}</td>
-            <td>${{ producto['precio'] }}</td>
-            <td>${{ producto['precioV'] }}</td>
+            <td data-label=Nombre>{{ producto['nombre'] }}</td>
+            <td data-label=Cantidad>{{ producto['cantidad'] }}</td>
+            <td data-label=PrecioV>${{ producto['precio'] }}</td>
+            <td data-label=Operaciones>${{ producto['precioV'] }}</td>
             <td>
                 <form action="/vender/{{ producto['id'] }}" method="post" style="display:inline;">
                     <input type="number" name="cantidad_vendida" min="1"  placeholder="Cantidad" required>
@@ -200,6 +236,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 <script>
 function abrirModal() {
     document.getElementById('modalProducto').style.display = 'block';
