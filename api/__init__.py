@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect,url_for,jsonify
+from flask import Flask, render_template, request, redirect,url_for,jsonify,flash
 from . import db
 from api.db import get_db
 import os
@@ -12,7 +12,7 @@ def create_app(instance_relative_config=True):
     template_path = os.path.join(os.path.dirname(__file__), '..', 'templates')
     static_path = os.path.join(os.path.dirname(__file__), '..', 'static')
     app = Flask(__name__, instance_relative_config=instance_relative_config,template_folder=template_path, static_folder=static_path)
-    
+    app.secret_key = 'Mami2025*'
         
     # Ruta a la base de datos dentro de la carpeta 'instance'
     app.config['DATABASE'] = os.path.join(app.instance_path, 'flaskr.sqlite')
@@ -121,10 +121,10 @@ def create_app(instance_relative_config=True):
         producto_id = request.form['producto_id']
        
         cantidad = int(request.form['cantidad'])
+        entregado = float(request.form['entregado'])
         db = get_db()
         producto = db.execute(f'SELECT Nombre,Cantidad,Precio FROM productos WHERE id = {producto_id}').fetchall()
-        for i in producto:
-            print(i)
+        
         
 	    
 	    ##conn = db.connect()
@@ -143,11 +143,15 @@ def create_app(instance_relative_config=True):
 	
         if cantidad > stock_actual:
             db.close()
-            return f"No hay suficiente inventario. Stock disponible: {stock_actual}", 400
+            flash(f"No hay suficiente inventario. Stock disponible: {stock_actual}")
+            return redirect(url_for('caja'))
 	    
         total = precio * cantidad
         fecha = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-	
+        if entregado<total:
+             flash(f'Dinero insuficiente para completar la venta, faltan {total-entregado}')
+             return redirect(url_for('caja'))
+			
 	    # Registrar la venta
         db.execute("""INSERT INTO ventas (producto_id, nombre, precio, cantidad, total, fecha)VALUES (?, ?, ?, ?, ?, ?)""", (producto_id, nombre, precio, cantidad, total, fecha))
 	

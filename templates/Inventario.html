@@ -221,8 +221,8 @@
         <tr>
             <td data-label=Nombre>{{ producto['nombre'] }}</td>
             <td data-label=Cantidad>{{ producto['cantidad'] }}</td>
-            <td data-label=PrecioV>${{ producto['precio'] }}</td>
-            <td data-label=Operaciones>${{ producto['precioV'] }}</td>
+            <td data-label=PrecioA>${{ producto['precio'] }}</td>
+            <td data-label=PrecioV>${{ producto['precioV'] }}</td>
             <td>
                 <form action="/vender/{{ producto['id'] }}" method="post" style="display:inline;">
                     <input type="number" name="cantidad_vendida" min="1"  placeholder="Cantidad" required>
